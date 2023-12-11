@@ -1,9 +1,5 @@
-// models/userModel.js
-
-// const { DataTypes } = require('sequelize');
-// const { DataTypes } = require('sequelize/types');
 const sequelize = require('../config/config');
-const { DataTypes } = require('sequelize');
+const { DataTypes, Sequelize, STRING } = require('sequelize');
 // const sequelize = require('../config/db');
 
 const Poll = sequelize.define('Poll', {
@@ -57,10 +53,15 @@ const Poll = sequelize.define('Poll', {
     rightOption:{
         type:DataTypes.STRING,
         allowNull:false
-    }
+    },
+    userVoted: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
   });
 
-  Poll.hasMany(QuestionSet, { as: 'questionSets', foreignKey: 'PollId' });
+  // Poll.hasMany(QuestionSet, { as: 'questionSets', foreignKey: 'PollId' });
+  Poll.hasMany(QuestionSet, { as: 'questionSets', foreignKey: 'pollId' });
 
   const User = sequelize.define('User', {
     username: {
@@ -79,11 +80,20 @@ const Poll = sequelize.define('Poll', {
     password: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    balance: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
     }
     
   });
 
-  Poll.belongsToMany(User, { as: 'voters', through: 'UserPolls', foreignKey: 'PollId' });
+  User.hasMany(Poll, { as: 'votedPolls', foreignKey: 'id' });
+Poll.belongsTo(User, { foreignKey: 'id' });
+  // Poll.belongsToMany(User, { as: 'voters', through: 'UserPolls', foreignKey: 'UserId' });
+  // User.hasMany(Poll, { as: 'questionSets', foreignKey: 'userId' });
+
+  // Poll.belongsToMany(User, { as: 'voters', through: 'UserPolls', foreignKey: 'id' });*********
 // User.hasMany(Poll, { as: 'votedPolls', foreignKey: 'userId' });
 // Poll.belongsTo(User, { foreignKey: 'userId' });
 
@@ -122,11 +132,13 @@ const Poll = sequelize.define('Poll', {
       allowNull: true,
     },
   });
-  
-  
   UserPollHistory.belongsTo(User, { foreignKey: 'userId' });
-  UserPollHistory.belongsTo(Poll, { foreignKey: 'pollId' });
-  UserPollHistory.belongsTo(QuestionSet, { foreignKey: 'questionId' });
+UserPollHistory.belongsTo(Poll, { foreignKey: 'pollId' });
+UserPollHistory.belongsTo(QuestionSet, { foreignKey: 'questionId' });
+  
+  // UserPollHistory.belongsTo(User, { foreignKey: 'userId' });
+  // UserPollHistory.belongsTo(Poll, { foreignKey: 'pollId' });
+  // UserPollHistory.belongsTo(QuestionSet, { foreignKey: 'questionId' });
 
   const PollAnalytics = sequelize.define('PollAnalytics', {
     pollId: {
@@ -137,7 +149,6 @@ const Poll = sequelize.define('Poll', {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    // Counts for each option
     optionACount: {
       type: DataTypes.INTEGER,
       allowNull: false,
